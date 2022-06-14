@@ -227,18 +227,19 @@ if(MSVC AND MACHINE MATCHES "x86|amd64")
     list(TRANSFORM PLATFORM_DEFINITIONS PREPEND /D)
     foreach(FILE ${PLATFORM_SOURCES})
         get_filename_component(FILENAME ${FILE} NAME)
+        string(MAKE_C_IDENTIFIER "${FILENAME}" MOD_FILENAME)
         add_custom_command(
-            OUTPUT ${FILENAME}.asm
-            COMMAND ${CMAKE_C_COMPILER} /DASMALIGN_BALIGN ${PLATFORM_DEFINITIONS}
-            /I"${PROJECT_SOURCE_DIR}/../../src" /I"${PROJECT_BINARY_DIR}/src" /P /Fi${FILENAME}.asm /Tc "${FILE}"
+            OUTPUT ${MOD_FILENAME}.asm
+            COMMAND ${CMAKE_C_COMPILER} /nologo /DASMALIGN_BALIGN ${PLATFORM_DEFINITIONS}
+            /I"${PROJECT_SOURCE_DIR}/../../src" /I"${PROJECT_BINARY_DIR}/src" /P /Fi${MOD_FILENAME}.asm /Tc "${FILE}"
             DEPENDS ${FILE}
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
         add_custom_command(
-            OUTPUT ${FILENAME}.obj
-            COMMAND ${YASM_ASSEMBLER} -a x86 -m ${MACHINE} -p gas -r raw -f win32 -g null -o ${FILENAME}.obj ${FILENAME}.asm
-            DEPENDS ${FILENAME}.asm
+            OUTPUT ${MOD_FILENAME}.obj
+            COMMAND ${YASM_ASSEMBLER} -a x86 -m ${MACHINE} -p gas -r raw -f win32 -g null -o ${MOD_FILENAME}.obj ${MOD_FILENAME}.asm
+            DEPENDS ${MOD_FILENAME}.asm
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-        target_sources(${TARGET} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}.obj")
+        target_sources(${TARGET} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${MOD_FILENAME}.obj")
     endforeach()
 else()
     target_sources(${TARGET} PRIVATE ${PLATFORM_SOURCES})
